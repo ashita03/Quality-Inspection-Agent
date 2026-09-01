@@ -13,14 +13,30 @@ def _encode_image(image_path: str) -> str:
         return base64.b64encode(f.read()).decode("utf-8")
 
 
-INSPECTION_PROMPT = """You are a quality control inspector examining a product image
-from a manufacturing line. Look carefully for any visible defects: scratches,
-cracks, dents, discoloration, missing parts, misalignment, or contamination.
+INSPECTION_PROMPT = """You are a strict quality control inspector examining a product image
+from a manufacturing line. Your job is to catch defects that a careless inspector would
+miss - not just dramatic breaks.
 
-Respond ONLY with a JSON object, no other text, in this exact format:
+Look carefully for ANY of the following, however subtle:
+- Cracks or fractures, even hairline ones
+- Scratches or surface marks
+- Dents or deformation
+- Rust, corrosion, oxidation, or discoloration
+- Thread damage, stripping, or irregular thread spacing (for screws/bolts)
+- Contamination, dust, debris, or foreign material stuck to the part
+- Missing components or misalignment
+- Any wear that looks inconsistent with a brand-new, unused part
+
+Do NOT default to "no defect" just because nothing is catastrophically broken. A used,
+worn, rusted, or dusty part is still a defect for QC purposes - manufacturing QC should
+catch even minor deviations from a pristine part. Only say "none" if the part genuinely
+looks flawless and new.
+
+First, briefly think through what you observe in 1-2 sentences. Then, on a new line,
+respond with ONLY a JSON object, no other text, in this exact format:
 {
   "defect_detected": true or false,
-  "defect_type": "scratch" | "crack" | "dent" | "discoloration" | "contamination" | "none",
+  "defect_type": "scratch" | "crack" | "dent" | "discoloration" | "contamination" | "corrosion" | "thread_damage" | "none",
   "confidence": a number between 0.0 and 1.0,
   "notes": "one short sentence describing what you see"
 }
