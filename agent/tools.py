@@ -15,6 +15,7 @@ worth explaining in your README.
 
 import base64
 import json
+from langchain_core.messages import HumanMessage
 from langchain_ollama import ChatOllama
 
 # Change this if you pulled a different model, e.g. "qwen2-vl"
@@ -65,12 +66,15 @@ def inspect_image_node(state: dict) -> dict:
     """
     image_b64 = _encode_image(state["image_path"])
 
-    message = {
-        "role": "user",
-        "content": INSPECTION_PROMPT,
-        # langchain-ollama expects images passed like this:
-        "images": [image_b64],
-    }
+    message = HumanMessage(
+        content=[
+            {"type": "text", "text": INSPECTION_PROMPT},
+            {
+                "type": "image_url",
+                "image_url": f"data:image/jpeg;base64,{image_b64}",
+            },
+        ]
+    )
 
     response = _llm.invoke([message])
     raw_text = response.content
