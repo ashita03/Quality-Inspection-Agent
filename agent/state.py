@@ -11,6 +11,7 @@ class InspectionState(TypedDict):
     defect_type: Optional[str]        # e.g. "scratch", "crack", "none"
     confidence: Optional[float]       # 0.0 - 1.0
     raw_model_output: Optional[str]   # full text response, useful for debugging
+    notes: Optional[str]              # plain-language description of what the model saw
 
     # --- filled in by the check_history node ---
     recent_defect_count: Optional[int]   # how many similar defects recently

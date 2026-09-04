@@ -1,3 +1,18 @@
+"""
+This module holds the actual work-functions the agent calls: looking at
+an image, checking history, and writing to the DB.
+
+Note on terminology: in a "ReAct-style" LangChain agent, these would be
+wrapped with @tool and the LLM would freely choose which to call and when.
+In LangGraph, we're being more explicit: each of these becomes a NODE in
+the graph, and WE decide the wiring (which is more predictable and easier
+to debug for a pipeline like this). The LLM still does the actual
+reasoning/decision-making inside the inspect_image node and inside the
+conditional edge — it's just that the *shape* of the pipeline is fixed
+by us, not improvised by the model. This is a deliberate design choice
+worth explaining in your README.
+"""
+
 import base64
 import json
 from langchain_ollama import ChatOllama
@@ -44,17 +59,24 @@ respond with ONLY a JSON object, no other text, in this exact format:
 
 
 def inspect_image_node(state: dict) -> dict:
+    """
+    LangGraph node: sends the image to the local vision model and parses
+    its verdict into the state.
+    """
     image_b64 = _encode_image(state["image_path"])
 
     message = {
         "role": "user",
         "content": INSPECTION_PROMPT,
+        # langchain-ollama expects images passed like this:
         "images": [image_b64],
     }
 
     response = _llm.invoke([message])
     raw_text = response.content
 
+    # Vision models are inconsistent about sticking to pure JSON, so we
+    # defensively extract the {...} block rather than assuming clean output.
     try:
         start = raw_text.index("{")
         end = raw_text.rindex("}") + 1
@@ -78,5 +100,6 @@ def inspect_image_node(state: dict) -> dict:
         "defect_type": parsed.get("defect_type", "none"),
         "confidence": float(parsed.get("confidence", 0.0)),
         "raw_model_output": raw_text,
+        "notes": parsed.get("notes", ""),
         "reasoning_trace": state.get("reasoning_trace", []) + [trace_line],
     }
