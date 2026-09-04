@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, History, Flag, Sparkles, Upload, ImageIcon } from "lucide-react";
+import { Eye, History, Flag, Sparkles, Upload, ImageIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { inspectImage } from "../api";
 
 const VERDICT_STYLES = {
@@ -19,6 +19,7 @@ function iconForTraceLine(line) {
 export default function InspectionPanel({ latestResult, onNewResult }) {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState(null);
+    const [showDetails, setShowDetails] = useState(false);
 
     async function handleFileChange(event) {
         const file = event.target.files[0];
@@ -101,26 +102,40 @@ export default function InspectionPanel({ latestResult, onNewResult }) {
                         </div>
 
                         <div className="border-t border-[#ececec] pt-3">
-                            <div className="flex items-center gap-1.5 mb-2.5">
+                            <div className="flex items-center gap-1.5 mb-2">
                                 <Sparkles size={13} color="#6d4ee0" />
-                                <p className="text-xs font-medium text-[#6d4ee0]">Agent reasoning</p>
+                                <p className="text-xs font-medium text-[#6d4ee0]">Agent summary</p>
                             </div>
-                            <div className="flex flex-col gap-2.5">
-                                {latestResult.reasoning_trace.map((line, i) => {
-                                    const { Icon, bg, color } = iconForTraceLine(line);
-                                    return (
-                                        <div key={i} className="flex gap-2.5">
-                                            <div
-                                                className="w-[22px] h-[22px] rounded-full flex items-center justify-center flex-shrink-0"
-                                                style={{ background: bg }}
-                                            >
-                                                <Icon size={12} color={color} />
+                            <p className="text-xs text-[#52525b] mb-2.5">
+                                {latestResult.notes || "No description returned by the model."}
+                            </p>
+
+                            <button
+                                onClick={() => setShowDetails(!showDetails)}
+                                className="flex items-center gap-1 text-xs text-[#6d4ee0] font-medium mb-2"
+                            >
+                                {showDetails ? "Hide details" : "View agent reasoning"}
+                                {showDetails ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                            </button>
+
+                            {showDetails && (
+                                <div className="flex flex-col gap-2.5 pt-1">
+                                    {latestResult.reasoning_trace.map((line, i) => {
+                                        const { Icon, bg, color } = iconForTraceLine(line);
+                                        return (
+                                            <div key={i} className="flex gap-2.5">
+                                                <div
+                                                    className="w-[22px] h-[22px] rounded-full flex items-center justify-center flex-shrink-0"
+                                                    style={{ background: bg }}
+                                                >
+                                                    <Icon size={12} color={color} />
+                                                </div>
+                                                <p className="text-xs text-[#52525b] pt-0.5">{line}</p>
                                             </div>
-                                            <p className="text-xs text-[#52525b] pt-0.5">{line}</p>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </>
                 )}

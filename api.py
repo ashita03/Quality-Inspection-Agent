@@ -49,11 +49,12 @@ async def inspect(file: UploadFile = File(...), part_id: str = "UNKNOWN"):
     result = graph.invoke(initial_state)
 
     return {
-        "part_id": result["part_id"],
-        "verdict": result["verdict"],
-        "defect_type": result.get("defect_type"),
-        "confidence": result.get("confidence"),
-        "reasoning_trace": result["reasoning_trace"],
+    "part_id": result["part_id"],
+    "verdict": result["verdict"],
+    "defect_type": result.get("defect_type"),
+    "confidence": result.get("confidence"),
+    "notes": result.get("notes"),
+    "reasoning_trace": result["reasoning_trace"],
     }
 
 
