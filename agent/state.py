@@ -11,6 +11,7 @@ class InspectionState(TypedDict):
     defect_type: Optional[str]        # e.g. "scratch", "crack", "none"
     confidence: Optional[float]       # 0.0 - 1.0
     raw_model_output: Optional[str]   # full text response, useful for debugging
+    equipment_type: Optional[str]     # e.g. "screw", "bolt", "bottle cap"
     notes: Optional[str]              # plain-language description of what the model saw
 
     # --- filled in by the check_history node ---

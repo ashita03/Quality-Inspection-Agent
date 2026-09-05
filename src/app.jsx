@@ -72,7 +72,7 @@ export default function App() {
                         value={
                             stats?.total_inspections
                                 ? `${Math.round(
-                                    (stats.verdict_counts.pass / stats.total_inspections) * 100
+                                    ((stats.verdict_counts?.pass ?? 0) / stats.total_inspections) * 100
                                 )}%`
                                 : "—"
                         }
