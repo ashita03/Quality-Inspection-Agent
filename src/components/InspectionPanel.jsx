@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Eye, History, Flag, Sparkles, Upload, ImageIcon, ChevronDown, ChevronUp } from "lucide-react";
-import { inspectImage } from "../api";
+import { Eye, History, Flag, Sparkles, Upload, ImageIcon, ChevronDown, ChevronUp, Check } from "lucide-react";
+import { inspectImage, BASE_URL } from "../api";
 
 const VERDICT_STYLES = {
     pass: { bg: "#ecfdf3", text: "#067647" },
@@ -13,6 +13,7 @@ const VERDICT_STYLES = {
 function iconForTraceLine(line) {
     if (line.startsWith("inspect_image")) return { Icon: Eye, bg: "#eff6ff", color: "#1d6ee0" };
     if (line.startsWith("check_history")) return { Icon: History, bg: "#f5f3ff", color: "#6d4ee0" };
+    if (line.startsWith("pass_node")) return { Icon: Check, bg: "#ecfdf3", color: "#17b26a" };
     return { Icon: Flag, bg: "#fef2f2", color: "#e0392f" };
 }
 
@@ -62,7 +63,7 @@ export default function InspectionPanel({ latestResult, onNewResult }) {
                 <p className="text-xs text-[#e0392f] mb-3">{error}</p>
             )}
 
-            <div className="bg-white border border-[#ececec] rounded-xl p-[1.1rem]">
+            <div className="bg-white border border-[#e4e4e7] rounded-xl p-[1.1rem] shadow-sm">
                 {!latestResult ? (
                     <p className="text-xs text-[#a1a1aa] text-center py-8">
                         No inspections yet — upload an image to see the agent's verdict here.
@@ -83,13 +84,28 @@ export default function InspectionPanel({ latestResult, onNewResult }) {
                         </div>
 
                         <div className="flex gap-3 mb-3.5">
-                            <div className="w-24 h-24 rounded-[10px] bg-[#fafafa] flex-shrink-0 flex items-center justify-center">
-                                <ImageIcon size={26} color="#d4d4d4" />
+                            <div className="w-24 h-24 rounded-[10px] bg-[#fafafa] flex-shrink-0 overflow-hidden flex items-center justify-center">
+                                {latestResult.image_url ? (
+                                    <img
+                                        src={`${BASE_URL}${latestResult.image_url}`}
+                                        alt={latestResult.equipment_type || "inspected part"}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <ImageIcon size={26} color="#d4d4d4" />
+                                )}
                             </div>
                             <div className="flex-1">
-                                <p className="text-[15px] font-medium text-[#18181b] mb-0.5">
-                                    {latestResult.part_id}
-                                </p>
+                                <div className="flex items-center gap-1.5 mb-0.5">
+                                    <p className="text-[15px] font-medium text-[#18181b]">
+                                        {latestResult.part_id}
+                                    </p>
+                                    {latestResult.equipment_type && (
+                                        <span className="text-[11px] px-1.5 py-px rounded-md bg-[#f0f0ff] text-[#4f46e5] font-medium capitalize">
+                                            {latestResult.equipment_type}
+                                        </span>
+                                    )}
+                                </div>
                                 <div className="flex gap-1.5 flex-wrap">
                                     <span className="text-[11px] px-2 py-0.5 rounded-md bg-[#fef2f2] text-[#b42318]">
                                         {latestResult.defect_type}
@@ -102,13 +118,21 @@ export default function InspectionPanel({ latestResult, onNewResult }) {
                         </div>
 
                         <div className="border-t border-[#ececec] pt-3">
-                            <div className="flex items-center gap-1.5 mb-2">
-                                <Sparkles size={13} color="#6d4ee0" />
-                                <p className="text-xs font-medium text-[#6d4ee0]">Agent summary</p>
+                            <div
+                                className="rounded-[10px] p-3 mb-2.5 border"
+                                style={{
+                                    background: "linear-gradient(135deg, #f5f3ff, #fdf4ff)",
+                                    borderColor: "#e9d8fd",
+                                }}
+                            >
+                                <div className="flex items-center gap-1.5 mb-1.5">
+                                    <Sparkles size={13} color="#7c3aed" />
+                                    <p className="text-xs font-semibold text-[#7c3aed]">Agent summary</p>
+                                </div>
+                                <p className="text-[12.5px] text-[#44403c] leading-relaxed">
+                                    {latestResult.notes || "No description returned by the model."}
+                                </p>
                             </div>
-                            <p className="text-xs text-[#52525b] mb-2.5">
-                                {latestResult.notes || "No description returned by the model."}
-                            </p>
 
                             <button
                                 onClick={() => setShowDetails(!showDetails)}

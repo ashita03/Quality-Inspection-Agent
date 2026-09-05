@@ -1,4 +1,5 @@
 import { ImageIcon } from "lucide-react";
+import { BASE_URL } from "../api";
 
 const VERDICT_TEXT_COLOR = {
     pass: "#17b26a",
@@ -17,17 +18,30 @@ export default function RecentInspections({ history }) {
                     {history.map((item, i) => (
                         <div
                             key={item.id}
-                            className={`flex items-center gap-2.5 py-1.5 ${i < history.length - 1 ? "border-b border-[#f4f4f5]" : ""
+                            className={`flex items-center gap-2.5 py-2 ${i < history.length - 1 ? "border-b border-[#f4f4f5]" : ""
                                 }`}
                         >
-                            <div className="w-6.5 h-6.5 rounded-md bg-[#fafafa] flex items-center justify-center">
-                                <ImageIcon size={13} color="#d4d4d4" />
+                            <div className="w-[34px] h-[34px] rounded-md bg-[#fafafa] flex-shrink-0 overflow-hidden flex items-center justify-center">
+                                {item.image_url ? (
+                                    <img
+                                        src={`${BASE_URL}${item.image_url}`}
+                                        alt={item.equipment_type || "part"}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <ImageIcon size={13} color="#d4d4d4" />
+                                )}
                             </div>
-                            <span className="text-[13px] flex-1 text-[#18181b]">
-                                {item.part_id}
-                            </span>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[12.5px] font-medium text-[#18181b] truncate">
+                                    {item.part_id}
+                                </p>
+                                <p className="text-[11px] text-[#a1a1aa] capitalize truncate">
+                                    {item.equipment_type || "Unknown"}
+                                </p>
+                            </div>
                             <span
-                                className="text-xs capitalize"
+                                className="text-xs capitalize flex-shrink-0"
                                 style={{ color: VERDICT_TEXT_COLOR[item.verdict] || "#71717a" }}
                             >
                                 {item.verdict}
