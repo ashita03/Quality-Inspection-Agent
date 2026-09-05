@@ -1,3 +1,8 @@
+"""
+Tiny SQLite wrapper. No ORM — plain sqlite3 is fine at this scale and it's
+one less thing to explain in your README.
+"""
+
 import sqlite3
 from pathlib import Path
 from datetime import datetime, timezone
@@ -18,6 +23,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             part_id TEXT,
             image_path TEXT,
+            equipment_type TEXT,
             defect_detected INTEGER,
             defect_type TEXT,
             confidence REAL,
@@ -35,12 +41,13 @@ def insert_inspection(state: dict):
     conn.execute(
         """
         INSERT INTO inspections
-            (part_id, image_path, defect_detected, defect_type, confidence, verdict, reasoning_trace, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (part_id, image_path, equipment_type, defect_detected, defect_type, confidence, verdict, reasoning_trace, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             state.get("part_id"),
             state.get("image_path"),
+            state.get("equipment_type"),
             int(bool(state.get("defect_detected"))),
             state.get("defect_type"),
             state.get("confidence"),
@@ -54,6 +61,10 @@ def insert_inspection(state: dict):
 
 
 def count_recent_defects(defect_type: str, limit_rows: int = 20) -> int:
+    """
+    Counts how many of the last `limit_rows` inspections had this same
+    defect_type. Used by the agent to decide if a defect is 'spiking'.
+    """
     if not defect_type or defect_type == "none":
         return 0
     conn = get_connection()

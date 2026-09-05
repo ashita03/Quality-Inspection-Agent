@@ -51,6 +51,7 @@ looks flawless and new.
 First, briefly think through what you observe in 1-2 sentences. Then, on a new line,
 respond with ONLY a JSON object, no other text, in this exact format:
 {
+  "equipment_type": "a short name for the item, e.g. screw, bolt, bottle cap, gasket, bracket",
   "defect_detected": true or false,
   "defect_type": "scratch" | "crack" | "dent" | "discoloration" | "contamination" | "corrosion" | "thread_damage" | "none",
   "confidence": a number between 0.0 and 1.0,
@@ -105,5 +106,6 @@ def inspect_image_node(state: dict) -> dict:
         "confidence": float(parsed.get("confidence", 0.0)),
         "raw_model_output": raw_text,
         "notes": parsed.get("notes", ""),
+        "equipment_type": parsed.get("equipment_type", "unknown"),
         "reasoning_trace": state.get("reasoning_trace", []) + [trace_line],
     }

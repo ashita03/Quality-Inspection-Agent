@@ -8,6 +8,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from agent.db import init_db, get_connection
 from agent.graph import build_graph
 
+from fastapi.staticfiles import StaticFiles
+
 app = FastAPI(title="QC Agent API")
 
 # React's dev server runs on a different port than FastAPI, so the browser
@@ -21,6 +23,7 @@ app.add_middleware(
 
 UPLOAD_DIR = Path("uploaded_images")
 UPLOAD_DIR.mkdir(exist_ok=True)
+app.mount("/images", StaticFiles(directory=UPLOAD_DIR), name="images")
 
 graph = build_graph()
 
@@ -49,12 +52,14 @@ async def inspect(file: UploadFile = File(...), part_id: str = "UNKNOWN"):
     result = graph.invoke(initial_state)
 
     return {
-    "part_id": result["part_id"],
-    "verdict": result["verdict"],
-    "defect_type": result.get("defect_type"),
-    "confidence": result.get("confidence"),
-    "notes": result.get("notes"),
-    "reasoning_trace": result["reasoning_trace"],
+        "part_id": result["part_id"],
+        "verdict": result["verdict"],
+        "defect_type": result.get("defect_type"),
+        "confidence": result.get("confidence"),
+        "notes": result.get("notes"),
+        "equipment_type": result.get("equipment_type"),
+        "image_url": f"/images/{saved_path.name}",
+        "reasoning_trace": result["reasoning_trace"],
     }
 
 
@@ -65,7 +70,15 @@ def history(limit: int = 50):
         "SELECT * FROM inspections ORDER BY id DESC LIMIT ?", (limit,)
     ).fetchall()
     conn.close()
-    return [dict(row) for row in rows]
+
+    results = []
+    for row in rows:
+        item = dict(row)
+        if item.get("image_path"):
+            filename = Path(item["image_path"]).name
+            item["image_url"] = f"/images/{filename}"
+        results.append(item)
+    return results
 
 
 @app.get("/stats")
