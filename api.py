@@ -12,11 +12,12 @@ from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(title="QC Agent API")
 
-# React's dev server runs on a different port than FastAPI, so the browser
-# will block requests unless we explicitly allow that origin here.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite's default dev port
+    allow_origins=[
+        "http://localhost:5173",
+        "https://ashita03.github.io",
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
